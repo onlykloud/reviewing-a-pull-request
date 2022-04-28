@@ -21,3 +21,14 @@ To play the game:
 >> _*SUPPORTED BROWSERS*: Chrome, Firefox, Safari, Opera and IE9+_
 
 This fun open source game was cloned from: https://github.com/jakesgordon/javascript-tetris
+
+// Container CPU 
+// View all the container CPU usage averaged over 30mins. 
+// To create an alert for this query, click '+ New alert rule'
+//Select the Line chart display option: can we calculate percentage?
+Perf
+| where ObjectName == "K8SContainer" and CounterName == "memoryRssBytes"
+| extend PodUid = tostring(split(InstanceName, '/',9)[0]), Container = tostring(split(InstanceName, '/', 10)[0])
+| join kind=leftouter (KubePodInventory | summarize arg_max(TimeGenerated, *) by PodUid) on PodUid
+| where Namespace == "default"
+| summarize Memora_RAM_Utilizada = avg(CounterValue)/100000 by format_datetime(bin(TimeGenerated, 40m),'yyyy-M-dd [H:mm:ss]') , Controller_Name = Name, Namespace
